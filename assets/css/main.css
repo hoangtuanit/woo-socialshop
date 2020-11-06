@@ -1,0 +1,31 @@
+#woo-socialshop .table {
+  width: 100%; }
+  #woo-socialshop .table thead tr th {
+    white-space: nowrap; }
+  #woo-socialshop .table .woocommerce-product-gallery__image img {
+    width: 80px;
+    height: 80px;
+    object-fit: contain; }
+  #woo-socialshop .table .post-status[data-status='publish'] {
+    color: #fff;
+    background-color: #007bff; }
+  #woo-socialshop .table .post-status[data-status='future'] {
+    color: #fff;
+    background-color: #28a745; }
+  #woo-socialshop .table .post-status[data-status='pending'] {
+    color: #fff;
+    background-color: #343a40; }
+  #woo-socialshop .table .post-status[data-status='private'] {
+    color: #fff;
+    background-color: #dc3545; }
+  #woo-socialshop .table .post-status[data-status='trash'] {
+    color: #fff;
+    background-color: #6c757d; }
+  #woo-socialshop .table .post-status[data-status='auto-draft'] {
+    color: #212529;
+    background-color: #f8f9fa; }
+  #woo-socialshop .table .post-status[data-status='inherit'] {
+    color: #fff;
+    background-color: #17a2b8; }
+
+/*# sourceMappingURL=main.css.map */

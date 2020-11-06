@@ -1,0 +1,56 @@
+#woo-socialshop{
+	.table{
+		width: 100%;
+		thead{
+			tr{
+				th{
+    				white-space: nowrap;
+				}
+			}
+		}
+		tbody{
+			td{
+				img{
+
+				}
+			}
+		}
+		.woocommerce-product-gallery__image{
+			img{
+				width: 80px;
+				height: 80px;
+				object-fit:contain;
+			}
+		}
+		.post-status{
+			&[data-status='publish']{
+				color: #fff;
+				background-color: #007bff;
+			}
+			&[data-status='future']{
+				color: #fff;
+				background-color: #28a745;
+			}
+			&[data-status='pending']{
+				color: #fff;
+				background-color: #343a40;
+			}
+			&[data-status='private']{
+				color: #fff;
+				background-color: #dc3545;
+			}
+			&[data-status='trash']{
+				color: #fff;
+				background-color: #6c757d;
+			}
+			&[data-status='auto-draft']{
+				color: #212529;
+				background-color: #f8f9fa
+			}
+			&[data-status='inherit']{
+				color: #fff;
+				background-color: #17a2b8;
+			}
+		}
+	}
+}
