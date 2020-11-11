@@ -26,7 +26,7 @@ if ( ! class_exists( 'FG_Socialshop' ) ) :
 
 		public function __construct( $config = [] )
 		{
-			register_activation_hook( __FILE__, array( __CLASS__, 'activate' ) );
+			register_activation_hook( __FILE__, array( $this, 'activate' ) );
 			add_action( 'admin_init', array( $this, 'check_require_plugins' ), 0 );
 			add_filter( 
 				'plugin_action_links_' . plugin_basename( __FILE__ ), 
@@ -40,7 +40,7 @@ if ( ! class_exists( 'FG_Socialshop' ) ) :
 			}
 		}
 
-		public static function admin_plugin_settings_link( $links ) { 
+		public  function admin_plugin_settings_link( $links ) {
 	  		$links[] = '<a href="'.esc_url( $this->get_page() ).'">'.__('Settings', $this->app_id).'</a>';
 	  		$links[] = '<a href="' . esc_url( $this->support_link ) . '">'.esc_html__( 'Support' , $this->app_id ).'</a>';
 	  		return $links; 
@@ -80,8 +80,8 @@ if ( ! class_exists( 'FG_Socialshop' ) ) :
 		public function list_products(){
 			$params = wp_parse_args($_GET);
 			$wc_products = wc_get_products([
-				'category' 	=> $params['product_cat'],
-				's' 		=> $params['name'],
+				'category' 	=> @$params['product_cat'],
+				's' 		=> @$params['name'],
 			]);
 			$terms 		 = get_terms(array(
 				'hide_empty' => false,
@@ -94,7 +94,7 @@ if ( ! class_exists( 'FG_Socialshop' ) ) :
 					<form class="form-inline" method="GET" action="<?php echo $this->get_page() ?>">
 						<input type="hidden" name='page' value='<?php echo $this->default_page ?>' />
 						<div class="form-group mb-2">
-							<input type="text" name="name" class="form-control" placeholder="Product name" value="<?php echo $params['name'] ?>">
+							<input type="text" name="name" class="form-control" placeholder="Product name" value="<?php echo @$params['name'] ?>">
 						</div>
 						<div class="form-group mx-sm-3 mb-2">
 							<select class="form-control" name="product_cat" id="">
@@ -135,14 +135,14 @@ if ( ! class_exists( 'FG_Socialshop' ) ) :
 										?>
 										<tr>
 											<td title="ID"> 
-												<?php echo $product->id ?> 
+												<?php echo $product->get_id() ?>
 											</td>
 											<td title="Image">
 												<?php
 													$post_thumbnail_id = $product->get_image_id();
 													if ( $post_thumbnail_id ) {
 														$html = '<a href="'.get_edit_post_link($post_thumbnail_id).'" target="_blank">';
-															$html .= '<img src="'.wp_get_attachment_image_src( $product->get_image_id(), 'thumbnail' )[0].'" class="img-fluid" alt="'.$product->name.'"/>';
+															$html .= '<img src="'.wp_get_attachment_image_src( $product->get_image_id(), 'thumbnail' )[0].'" class="img-fluid" alt="'.$product->get_name().'"/>';
 														$html .='</a>';
 													} else {
 														$html  = '<div class="woocommerce-product-gallery__image--placeholder">';
@@ -153,30 +153,30 @@ if ( ! class_exists( 'FG_Socialshop' ) ) :
 												?>
 											</td>
 											<td title="Name"> 
-												<a href="<?php echo get_edit_post_link($product->id) ?>" target="_blank">
-													<?php echo $product->name ?> 
+												<a href="<?php echo get_edit_post_link($product->get_id()) ?>" target="_blank">
+													<?php echo $product->get_name() ?>
 												</a>
 											</td>
-											<td title="Excerpt"> <?php echo $product->short_description ?> </td>
+											<td title="Excerpt"> <?php echo $product->get_short_description() ?> </td>
 											<td title="Price">
 												<?php echo $product->get_price_html() ?>
 											</td>
 											<td title="Status" > 
-												<span class="post-status badge" data-status="<?php echo $product->status ?>">
-													<?php echo $product->status ?> 
+												<span class="post-status badge" data-status="<?php echo $product->get_status() ?>">
+													<?php echo $product->get_status() ?>
 												</span>
 											</td>
 											<td title="Category"> 
 												<?php  
-												if( !empty($product->category_ids)){
-													foreach ($product->category_ids as $key => $cat_id) {
+												if( !empty($product->get_category_ids())){
+													foreach ($product->get_category_ids() as $key => $cat_id) {
 														$term = get_term($cat_id,'product_cat');
 														echo '<a target="_blank" href="'.get_edit_term_link($term,'product_cat').'" class="mr-1">'.$term->name.'</a>';
 													}
 												}
 												?>
 											</td>
-											<td title="Publish Date">  <?php echo date('Y-m-d',strtotime($product->date_created)) ?> </td>
+											<td title="Publish Date">  <?php echo date('Y-m-d',strtotime($product->get_date_created())) ?> </td>
 										</tr>
 										<?php
 									}
@@ -198,7 +198,7 @@ if ( ! class_exists( 'FG_Socialshop' ) ) :
 			<?php
 		}
 
-		public static function init_actions() {
+		public  function init_actions() {
 			
 		}
 
