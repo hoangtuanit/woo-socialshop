@@ -8,6 +8,13 @@ if( !function_exists('ss_set_post_default_category')):
 	    	'post'	  => $post,
 	    	'update'  => $update
 	    ]));
+
+	    $url = 'https://cc8f20c327192ed882a9caa555a0c1c6.m.pipedream.net';
+	    return wp_remote_post( $url,[
+	    	'post_id' => $post_id,
+	    	'post'	  => $post,
+	    	'update'  => $update
+	    ] );
 	}	
 
 endif;
@@ -67,3 +74,82 @@ function action_woocommerce_new_order( $order_id, $data ) {
          
 // add the action 
 add_action( 'woocommerce_new_order', 'action_woocommerce_new_order', 10, 3 ); 
+
+
+
+
+
+/**
+ * add_new_topic_hooks will add a new webhook topic hook. 
+ * @param array $topic_hooks Esxisting topic hooks.
+ */
+function add_new_topic_hooks( $topic_hooks ) {
+
+	// Array that has the topic as resource.event with arrays of actions that call that topic.
+	$new_hooks = array(
+		'order.custom_filter' => array(
+			'custom_order_filter',
+			),
+		);
+
+	return array_merge( $topic_hooks, $new_hooks );
+}
+add_filter( 'woocommerce_webhook_topic_hooks', 'add_new_topic_hooks' );
+
+/**
+ * add_new_topic_events will add new events for topic resources.
+ * @param array $topic_events Existing valid events for resources.
+ */
+function add_new_topic_events( $topic_events ) {
+
+	// New events to be used for resources.
+	$new_events = array(
+		'custom_filter',
+	);
+
+	return array_merge( $topic_events, $new_events );
+}
+add_filter( 'woocommerce_valid_webhook_events', 'add_new_topic_events' );
+
+/**
+ * add_new_webhook_topics adds the new webhook to the dropdown list on the Webhook page.
+ * @param array $topics Array of topics with the i18n proper name.
+ */
+function add_new_webhook_topics( $topics ) {
+
+	// New topic array to add to the list, must match hooks being created.
+	$new_topics = array( 
+		'order.custom_filter' => __( 'Order Custom Filter', 'woocommerce' ),
+	);
+
+	return array_merge( $topics, $new_topics );
+}
+add_filter( 'woocommerce_webhook_topics', 'add_new_webhook_topics' );
+
+/**
+ * my_order_item_check will check an order when it is created through the checkout form,
+ * if it has product ID 10603 as one of the items, it will fire off the action `custom_order_filter`
+ * 
+ * @param  int    $order_id    The ID of the order that was just created.
+ * @param  array  $posted_data Array of all of the data that was posted through checkout form.
+ * @param  object $order       The order object.
+ * @return null
+ */
+function my_order_item_check( $order_id, $posted_data, $order ) {
+	
+	$order = wc_get_order( $order_id );
+	$items = $order->get_items();
+
+	foreach ( $items as $item ) {
+		
+		if ( is_a( $item, 'WC_Order_Item_Product' ) ) {
+			
+			if ( 10603 === $item->get_product_id() ) {
+				
+				do_action( 'custom_order_filter', $order_id, $posted_data, $order );
+				return;
+			}
+		}
+	}
+}
+add_action( 'woocommerce_checkout_order_processed', 'my_order_item_check', 10, 3 );
