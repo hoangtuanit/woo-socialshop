@@ -11,6 +11,12 @@ Author URI: https://socialhead.io
 if ( ! defined( 'ABSPATH' ) ) {
 	die( 'Invalid request.' );
 }
+defined( 'ABSPATH' ) || exit;
+
+if ( ! defined( 'SS_PLUGIN_FILE' ) ) {
+	define( 'SS_PLUGIN_FILE', __FILE__ );
+}
+
 
 if ( ! class_exists( 'FG_Socialshop' ) ) :
 	/**
@@ -26,7 +32,7 @@ if ( ! class_exists( 'FG_Socialshop' ) ) :
 
 		public function __construct( $config = [] )
 		{
-			register_activation_hook( __FILE__, array( $this, 'activate' ) );
+			#register_activation_hook( __FILE__, array( $this, 'activate' ) );
 			add_action( 'admin_init', array( $this, 'check_require_plugins' ), 0 );
 			add_filter( 
 				'plugin_action_links_' . plugin_basename( __FILE__ ), 
@@ -38,6 +44,26 @@ if ( ! class_exists( 'FG_Socialshop' ) ) :
 				add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_styles' ), 5 );
 				add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ), 50 );
 			}
+
+			$this->define_constants();
+			$this->init_hooks();
+
+		}
+
+		public function define_constants(){
+			$upload_dir = wp_upload_dir( null, false );
+			$this->define( 'SS_PATH', dirname( SS_PLUGIN_FILE ) . '/' );
+		}
+
+		private function define( $name, $value ) {
+			if ( ! defined( $name ) ) {
+				define( $name, $value );
+			}
+		}
+
+		public function init_hooks(){
+			include_once SS_PATH . 'includes/ss-functions.php';
+			include_once SS_PATH . 'includes/ss-hooks.php';
 		}
 
 		public  function admin_plugin_settings_link( $links ) {
@@ -272,9 +298,29 @@ if ( ! class_exists( 'FG_Socialshop' ) ) :
 		}
 
 	}
+
     define( 'SS__PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
     require_once (SS__PLUGIN_DIR.'includes/rest/rest-ss.php');
     add_action( 'rest_api_init', array( 'Rest_SS', 'init' ) );
+
+
+	function my_plugin_activate() {
+
+	  add_option( 'Activated_Plugin', 'Plugin-Slug' );
+
+	  /* activation code here */
+	}
+	register_activation_hook( __FILE__, 'my_plugin_activate' );
+
+	function my_plugin_deactivate() {
+
+	  add_option( 'Deactive_Plugin', 'Plugin-Slug' );
+
+	  /* activation code here */
+	}
+	register_deactivation_hook( __FILE__, 'my_plugin_deactivate' );
+	
+
 	add_action('plugins_loaded',function(){
 		
 		new FG_Socialshop();
