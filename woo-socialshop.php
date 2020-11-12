@@ -272,7 +272,9 @@ if ( ! class_exists( 'FG_Socialshop' ) ) :
 		}
 
 	}
-	
+    define( 'SS__PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
+    require_once (SS__PLUGIN_DIR.'includes/rest/rest-ss.php');
+    add_action( 'rest_api_init', array( 'Rest_SS', 'init' ) );
 	add_action('plugins_loaded',function(){
 		
 		new FG_Socialshop();
