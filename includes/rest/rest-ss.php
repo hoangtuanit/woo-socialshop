@@ -5,7 +5,6 @@ class Rest_SS {
         'name','slug','date_created','date_modified','status','description','sku','price','sale_price','date_on_sale_from','date_on_sale_to','total_sales'
     ];
 
-
     public  static function  init(){
         register_rest_route( 'ss-integrate', '/product', array(
             array(
