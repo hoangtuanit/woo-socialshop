@@ -137,19 +137,6 @@ add_filter( 'woocommerce_webhook_topics', 'add_new_webhook_topics' );
  */
 function my_order_item_check( $order_id, $posted_data, $order ) {
 	
-	$order = wc_get_order( $order_id );
-	$items = $order->get_items();
-
-	foreach ( $items as $item ) {
-		
-		if ( is_a( $item, 'WC_Order_Item_Product' ) ) {
-			
-			if ( 10603 === $item->get_product_id() ) {
-				
-				do_action( 'custom_order_filter', $order_id, $posted_data, $order );
-				return;
-			}
-		}
-	}
+	do_action( 'custom_order_filter', $order_id, $posted_data, $order );
 }
 add_action( 'woocommerce_checkout_order_processed', 'my_order_item_check', 10, 3 );
