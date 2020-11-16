@@ -19,6 +19,8 @@ final class Init{
 			Base\Enqueue::class,
 			Base\SettingLinks::class,
 			Api\ProductApi::class,
+			Api\TaxonomyApi::class,
+			Api\WebhookApi::class,
 		];
 	}
 	/**

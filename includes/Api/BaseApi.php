@@ -11,7 +11,7 @@ class BaseApi{
     public function __construct(){
     }
 
-    public function register( $endpoint, $method, $callback ){
+    public function registerEndpoint( $endpoint, $method, $callback ){
         register_rest_route( $this->namespace, $endpoint , array(
             array(
                 'methods' => $method,
