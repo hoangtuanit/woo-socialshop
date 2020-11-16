@@ -33,20 +33,25 @@ class Rest_SS {
         $args = ['limit' => $limit, 'paginate' => true, 'paged' => $page];
         $wc_products = wc_get_products($args);
         $result = [];
-        foreach ($wc_products->products as $wc_product) {
+        foreach ($wc_products->products as $key => $wc_product) {
             $item = ['id' => $wc_product->id];
-            foreach (self::$listField  as $field ) {
-                $value = $wc_product-> {$field};
-                if(iso8601_to_datetime($value) !== false) {
-                    $item[$field] =  iso8601_to_datetime($value);
-                } else {
-                    $item[$field] =  $value;
-                }
+            // foreach (self::$listField  as $field ) {
+            //     $value = $wc_product-> {$field};
+            //     if(iso8601_to_datetime($value) !== false) {
+            //         $item[$field] =  iso8601_to_datetime($value);
+            //     } else {
+            //         $item[$field] =  $value;
+            //     }
 
-            }
-            $result[] = $item;
+            // }
+            $result[$key][] = $wc_product->get_data();
+            $result[$key]['variant_ids'] = $wc_product->get_variation_id();
         }
-        return ["status" => true,'data' => $result];
+        echo '<pre>wc_products:';
+        print_r( $result );
+        echo '</pre>';
+        die();
+        #return ["status" => true,'data' => $wc_products];
     }
 
 }

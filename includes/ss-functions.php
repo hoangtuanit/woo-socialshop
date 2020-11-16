@@ -8,13 +8,6 @@ if( !function_exists('ss_set_post_default_category')):
 	    	'post'	  => $post,
 	    	'update'  => $update
 	    ]));
-
-	    $url = 'https://cc8f20c327192ed882a9caa555a0c1c6.m.pipedream.net';
-	    return wp_remote_post( $url,[
-	    	'post_id' => $post_id,
-	    	'post'	  => $post,
-	    	'update'  => $update
-	    ] );
 	}	
 
 endif;
@@ -76,9 +69,6 @@ function action_woocommerce_new_order( $order_id, $data ) {
 add_action( 'woocommerce_new_order', 'action_woocommerce_new_order', 10, 3 ); 
 
 
-
-
-
 /**
  * add_new_topic_hooks will add a new webhook topic hook. 
  * @param array $topic_hooks Esxisting topic hooks.
@@ -87,7 +77,7 @@ function add_new_topic_hooks( $topic_hooks ) {
 
 	// Array that has the topic as resource.event with arrays of actions that call that topic.
 	$new_hooks = array(
-		'order.custom_filter' => array(
+		'product.custom_filter' => array(
 			'custom_order_filter',
 			),
 		);
@@ -119,7 +109,7 @@ function add_new_webhook_topics( $topics ) {
 
 	// New topic array to add to the list, must match hooks being created.
 	$new_topics = array( 
-		'order.custom_filter' => __( 'Order Custom Filter', 'woocommerce' ),
+		'product.custom_filter' => __( 'Product Custom Filter', 'woocommerce' ),
 	);
 
 	return array_merge( $topics, $new_topics );
@@ -127,16 +117,15 @@ function add_new_webhook_topics( $topics ) {
 add_filter( 'woocommerce_webhook_topics', 'add_new_webhook_topics' );
 
 /**
- * my_order_item_check will check an order when it is created through the checkout form,
- * if it has product ID 10603 as one of the items, it will fire off the action `custom_order_filter`
+ * my_product_item_check will check an order when it is created through the checkout form,
+ * It will fire off the action `custom_order_filter`
  * 
  * @param  int    $order_id    The ID of the order that was just created.
  * @param  array  $posted_data Array of all of the data that was posted through checkout form.
  * @param  object $order       The order object.
  * @return null
  */
-function my_order_item_check( $order_id, $posted_data, $order ) {
-	
+function my_product_item_check( $order_id, $posted_data, $order ) {
 	do_action( 'custom_order_filter', $order_id, $posted_data, $order );
 }
-add_action( 'woocommerce_checkout_order_processed', 'my_order_item_check', 10, 3 );
+add_action( 'save_post', 'my_product_item_check', 10, 3 );

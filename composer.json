@@ -1,0 +1,18 @@
+{
+    "name": "hoangtuan/woo-socialshop",
+    "description": "Woo Socialshop",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "hoangtuan.it93",
+            "email": "hoangtuan.it93@gmail.com"
+        }
+    ],
+    "minimum-stability":"dev",
+    "require":{},
+    "autoload": {
+        "psr-4":{
+            "Inc\\":"./includes"
+        }
+    }
+}

@@ -1,0 +1,46 @@
+wp_enqueue_style('mypluginstyle',plugins_url('/assets/mystyle.css',__FILE__) );
+
+register_activation_hook(__FILE__,array($classInstance,'active'));
+register_deactivation_hook(__FILE__,array($classInstance,'deactive'));
+register_uninstall_hook(__FILE__,array($classInstance,'uninstall'));
+
+require_once plugin_dir_path(__FILE__).'inc/plugin-file.php';
+
+- Tách function active vào 1 file
+require_once plugin_dir_path(__FILE__).'inc/plugin-active.php'; // Class name: PluginActive
+register_activation_hook(__FILE__,array('PluginActive','active'));
+
+- Composer and autolot
+ -> composer init
+{
+	"minimum-stability":"dev",
+	"require":{},
+	"autoload":	{
+		"psr-4":{
+			"Inc\\":"./inc"
+		}
+	}
+}
+
+ -> composer install -> create new vendor
+ -> Update: composer dump-autoload
+
+
+Begin plugin:
+if( file_exists( dirname( __FILE__  ).'/vendor/autoload.php' ) ){
+	require_once dirname( __FILE__ ).'/vendor/autoload.php';
+}
+
+In child file required: namespace Inc; is name in psr-4
+In parent file: use Inc\Activate;
+
+
+Concept: Final class -> Không thể được kế thùa
+- Tại sao lại dùng? 
+
+Cần test nhiều version PHP, Woocommerce:
+
+Function name: Snake and Lowercase: ws_function_name()
+Filename, Class name: Snake and Capitalize: WS_Class_Name
+Variable: camel : $variableName
+
