@@ -12,9 +12,16 @@ class ProductApi extends BaseApi{
         add_filter( 'woocommerce_product_object_query', array($this,'filterConvertObjectToArray'), 10, 2 );
     }
 
+    /**
+    * 1, Lấy danh sách variants của từng product
+    * 2, Lấy toàn bộ custom fields
+    */
+
     public function registerEndpoints(){
         $this->registerEndpoint( '/products',       'GET', 'getProducts' );
         $this->registerEndpoint( '/product/tags',   'GET', 'getProductTags' );
+        $this->registerEndpoint( '/product/metas',   'GET', 'getMetas' );
+        $this->registerEndpoint( '/product/attributes',   'GET', 'getAttributes' );
         $this->registerEndpoint( '/product/categories', 'GET', 'getProductCats' );
         $this->registerEndpoint( '/product/variants',   'GET', 'getProductVariants' );
         $this->registerEndpoint( '/product/variation-attributes', 'GET', 'getVariationAttributes' );
@@ -34,6 +41,33 @@ class ProductApi extends BaseApi{
         print_r( $wc_products );
         echo '</pre>';
         return wp_send_json_success($results);
+    }
+
+    /*
+    * @description Get list products
+    */
+    public function getMetas(){
+        if( !isset($_GET['id']) )
+            return wp_send_json_error(['message' => 'Product Id is required']);
+
+        $product_id = $_GET['id'];
+        $wc_product = new \WC_Product( $product_id );
+        return wp_send_json_success( $wc_product->get_meta_data());
+    }
+
+    /*
+    * @description Get list product attributes
+    */
+    public function getAttributes(){
+        if( !isset($_GET['id']) )
+            return wp_send_json_error(['message' => 'Product Id is required']);
+
+        $product_id = $_GET['id'];
+        $wc_product = new \WC_Product_Attribute( $product_id );
+        echo '<pre>';  
+        print_r( $wc_product->get_data() );
+        echo '</pre>';
+        return wp_send_json_success();
     }
 
     /**

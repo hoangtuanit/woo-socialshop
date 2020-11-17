@@ -44,3 +44,11 @@ Function name: Snake and Lowercase: ws_function_name()
 Filename, Class name: Snake and Capitalize: WS_Class_Name
 Variable: camel : $variableName
 
+
+========== ACTIVATE
+- Kiểm tra wp-json 
+- Kiểm tra woocommerce ( đã test version bao nhiêu trở lên )
+
+========== DEACTIVATE
+
+- Xóa option
