@@ -3,6 +3,9 @@
 * @package  WooSocialshop
 */
 namespace Inc\Api;
+use WP_REST_SERVER;
+use WP_REST_Request;
+
 
 class BaseApi{
     
@@ -12,13 +15,36 @@ class BaseApi{
     }
 
     public function registerEndpoint( $endpoint, $method, $callback ){
+
         register_rest_route( $this->namespace, $endpoint , array(
             array(
-                'methods' => $method,
+                'methods' => 'GET',
+                #'methods' => array( $this, 'getMethods') ,
+                'args' => array(),
                 'permission_callback' => array( $this , 'privilegedPermissionCallback' ),
                 'callback' => array( $this, $callback ),
             )
         ) );
+    }
+
+    public function getMethods( WP_REST_Request $request){
+        echo '<pre>get_json_params:';
+        print_r( $request->get_json_params() );
+        echo '</pre>';
+        return WP_REST_Server::READABLE;
+        /*switch (strtoupper($method)  {
+            case 'GET':
+                return WP_REST_Server::READABLE;
+            case 'POST':
+                return WP_REST_Server::CREATABLE;
+            case 'PUT':
+                return WP_REST_Server::EDITABLE;
+            case 'PATCH':
+                return WP_REST_Server::EDITABLE;
+            default:
+                return WP_REST_Server::READABLE;
+                break;
+        }*/
     }
 
     public function parseParams( $request ){

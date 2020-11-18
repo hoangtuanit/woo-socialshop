@@ -7,7 +7,7 @@ use Inc\Api\BaseApi;
 
 class ProductApi extends BaseApi{
 
-    public function register(){
+    public function register(){        
         add_action( 'rest_api_init', array( $this , 'registerEndpoints' ));
         add_filter( 'woocommerce_product_object_query', array($this,'filterConvertObjectToArray'), 10, 2 );
     }
@@ -18,6 +18,7 @@ class ProductApi extends BaseApi{
     */
 
     public function registerEndpoints(){
+        $this->registerEndpoint( '/product/(?P<id>\d+)',  'GET', 'getProduct' );
         $this->registerEndpoint( '/products',       'GET', 'getProducts' );
         $this->registerEndpoint( '/product/tags',   'GET', 'getProductTags' );
         $this->registerEndpoint( '/product/metas',   'GET', 'getMetas' );
@@ -37,10 +38,22 @@ class ProductApi extends BaseApi{
         foreach ($wc_products->products as $key => $product) {
             $results[] = $product->get_data();
         }
-        echo '<pre>wc_products:';
-        print_r( $wc_products );
-        echo '</pre>';
         return wp_send_json_success($results);
+    }
+
+    /*
+    * @description Get list products
+    */
+    public function getProduct( $request ){
+        $product_id = $request->get_param('id');
+        if( !isset($product_id) )
+            return wp_send_json_error(['message' => 'Product Id is required']);
+
+        $wc_product = wc_get_product($product_id);
+        if( $wc_product ){
+            return wp_send_json_success($wc_product->get_data());
+        }
+        return wp_send_json_error([]);
     }
 
     /*
