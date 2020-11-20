@@ -10,7 +10,7 @@ class SsProduct{
 	public function __construct(){
 
 	}
-
+	
 	function getImageSrc( $id, $size = 'large' ){
 		$img = wc_placeholder_img_src($size);
 		$thumbnail_id = get_post_thumbnail_id( $id );
@@ -21,11 +21,19 @@ class SsProduct{
 		return $img;
 	}
 
-	function getThumbnailSrc($id, $size = 'large'){
-		$img = wc_placeholder_img_src($size);
+
+	function getThumbnailSrc( $id = null , $size = 'large'){
 	    $img = wp_get_attachment_image_src( $id, $size );
-	    $img = !empty($img[0]) ? $img[0] : $img_default;
-		return $img;
+	    if( !empty($img[0]) ){
+	    	return $img[0];
+	    }
+	    $placeholderId = $this->getPlaceholderImgId();
+	    $this->getThumbnailSrc( $placeholderId );
 	}
+
+	function getPlaceholderImgId(){
+		return get_option( 'woocommerce_placeholder_image', 0 );
+	}
+
 
 }

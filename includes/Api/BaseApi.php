@@ -52,7 +52,7 @@ class BaseApi{
     }
 
     public function parseParams( $request ){
-        $result = ['paged'=>1,'limit'=>10,'paginate'=>true];
+        $result = ['paged'=>1, 'limit'=>100, 'paginate' => true];
         $param  =  wp_parse_args($request);
         if( isset($param['page'])){
             $result['page'] = $param['page'];

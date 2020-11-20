@@ -5,13 +5,15 @@
 namespace Inc\Api;
 use Inc\Api\BaseApi;
 use Inc\Base\SsTaxonomy;
+use Inc\Base\SsProduct;
 
 class ProductApi extends BaseApi{
-    protected $ssTaxonomy;
+    protected $ssTaxonomy, $ssProduct;
 
     public function __construct(){
         $this->ssTaxonomy  = new SsTaxonomy();
-        echo wc_placeholder_img_src();
+        $this->ssProduct   = new SsProduct();
+        echo 'Thumbnail:'.$this->ssProduct->getThumbnailSrc(); 
     }
 
     public function register(){        
@@ -23,7 +25,6 @@ class ProductApi extends BaseApi{
     * 1, Lấy danh sách variants của từng product
     * 2, Lấy toàn bộ custom fields
     */
-
     public function registerEndpoints(){
         $this->registerEndpoint( '/product/(?P<id>\d+)',  'GET', 'getProduct' );
         $this->registerEndpoint( '/products',       'GET', 'getProducts' );
@@ -43,8 +44,15 @@ class ProductApi extends BaseApi{
         $wc_products = wc_get_products($params);
         $results  = [];
         foreach ($wc_products->products as $key => $product) {
+            $product_id    = $product->get_id();
             $results[$key] = $product->get_data();
-            $results[$key]['tag_ids2'] = $product->get_tags();
+
+            $results[$key]['type']       = $product->get_type();
+            $results[$key]['image_src']  = $product->get_image();
+            $results[$key]['tags']       = $this->ssTaxonomy->getTags($product_id);
+            $results[$key]['categories'] = $this->ssTaxonomy->getProductCats($product_id);
+
+
         }
         return wp_send_json_success($results);
     }
@@ -57,20 +65,13 @@ class ProductApi extends BaseApi{
         if( !isset($product_id) )
             return wp_send_json_error(['message' => 'Product Id is required']);
 
-        $test = wc_get_product_object($product_id);
-        // echo '<pre>test:';
-        // print_r( $test );
-        // echo '</pre>';
         $wc_product = wc_get_product($product_id);
         $product_data = $wc_product->get_data();
-        $product_data['image_src'] = $wc_product->get_image();
+        $product_data['type']       = $wc_product->get_type();
+        $product_data['image_src']  = $wc_product->get_image();
         $product_data['tags']       = $this->ssTaxonomy->getTags($product_id);
         $product_data['categories'] = $this->ssTaxonomy->getProductCats($product_id);
 
-
-        // echo '<pre>wc_product:';
-        // print_r( $wc_product );
-        // echo '</pre>';
         if( $wc_product ){
             return wp_send_json_success( $product_data );
         }
