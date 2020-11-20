@@ -12,6 +12,10 @@ class BaseApi{
     public $namespace = 'ss-integrate';
 
     public function __construct(){
+        // $product = new \WC_Product(2877);
+        // echo '<pre>';
+        // print_r( $product->get_type() );
+        // echo '</pre>';
     }
 
     public function registerEndpoint( $endpoint, $method, $callback ){
