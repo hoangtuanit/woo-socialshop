@@ -25,9 +25,9 @@ define('PLUGIN_NAME','Woo Socialshop');
 define('PLUGIN_SLUG','woo-socialshop');
 define('DEFAULT_PAGE','socialshop');
 define('PLUGIN_PATH', plugin_dir_path(__FILE__) );
+define('INCLUDE_PATH', plugin_dir_path(__FILE__).'includes/' );
 define('PLUGIN_URL', plugins_url('woo-socialshop') );
 define('PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
-
 
 function WSActivePlugin(){
 	Inc\Base\Activate::activate();
@@ -46,5 +46,7 @@ register_deactivation_hook( __FILE__, 'WSDeactivePlugin' );
  * Initialize all the core classes of the plugin
  */
 if ( class_exists( 'Inc\\Init' ) ) {
-	Inc\Init::registerServices();
+	add_action('plugin_loaded',function(){
+		Inc\Init::registerServices();
+	});
 }
