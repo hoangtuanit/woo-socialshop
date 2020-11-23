@@ -3,6 +3,8 @@
  * @package  WooSocialshop
  */
 
+defined( 'ABSPATH' ) || exit;
+
 namespace Inc\Base;
 
 class Activate{
@@ -46,6 +48,5 @@ class Activate{
 	private static function update_option(){
 		update_option( 'woo_socialshop_active', true );
 	}
-	
 }
 
