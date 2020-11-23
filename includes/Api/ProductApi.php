@@ -13,7 +13,6 @@ class ProductApi extends BaseApi{
     public function __construct(){
         $this->ssTaxonomy  = new SsTaxonomy();
         $this->ssProduct   = new SsProduct();
-        echo 'Thumbnail:'.$this->ssProduct->getThumbnailSrc(); 
     }
 
     public function register(){        
@@ -26,14 +25,14 @@ class ProductApi extends BaseApi{
     * 2, Lấy toàn bộ custom fields
     */
     public function registerEndpoints(){
-        $this->registerEndpoint( '/product/(?P<id>\d+)',  'GET', 'getProduct' );
-        $this->registerEndpoint( '/products',       'GET', 'getProducts' );
-        $this->registerEndpoint( '/product/tags',   'GET', 'getProductTags' );
-        $this->registerEndpoint( '/product/metas',   'GET', 'getMetas' );
-        $this->registerEndpoint( '/product/attributes',   'GET', 'getAttributes' );
-        $this->registerEndpoint( '/product/categories', 'GET', 'getProductCats' );
-        $this->registerEndpoint( '/product/variants',   'GET', 'getProductVariants' );
-        $this->registerEndpoint( '/product/variation-attributes', 'GET', 'getVariationAttributes' );
+        $this->registerEndpoint( '/product/(?P<id>\d+)',            'GET', 'getProduct' );
+        $this->registerEndpoint( '/products',                       'GET', 'getProducts' );
+        $this->registerEndpoint( '/product/tags',                   'GET', 'getProductTags' );
+        $this->registerEndpoint( '/product/metas',                  'GET', 'getMetas' );
+        $this->registerEndpoint( '/product/attributes',             'GET', 'getAttributes' );
+        $this->registerEndpoint( '/product/categories',             'GET', 'getProductCats' );
+        $this->registerEndpoint( '/product/variants',               'GET', 'getProductVariants' );
+        $this->registerEndpoint( '/product/variation-attributes',   'GET', 'getVariationAttributes' );
     }
 
     /*
@@ -52,7 +51,6 @@ class ProductApi extends BaseApi{
             $results[$key]['tags']       = $this->ssTaxonomy->getTags($product_id);
             $results[$key]['categories'] = $this->ssTaxonomy->getProductCats($product_id);
 
-
         }
         return wp_send_json_success($results);
     }
@@ -63,21 +61,19 @@ class ProductApi extends BaseApi{
     public function getProduct( $request ){
         $product_id = $request->get_param('id');
         if( !isset($product_id) )
-            return wp_send_json_error(['message' => 'Product Id is required']);
+            return wp_send_json_error(['Product Id is required']);
 
-        $wc_product = wc_get_product($product_id);
-        $product_data = $wc_product->get_data();
-        $product_data['type']       = $wc_product->get_type();
-        $product_data['image_src']  = $wc_product->get_image();
-        $product_data['tags']       = $this->ssTaxonomy->getTags($product_id);
-        $product_data['categories'] = $this->ssTaxonomy->getProductCats($product_id);
+        $product = $this->ssProduct->getProduct($product_id);
+        if( empty($product) ){
+            return wp_send_json_error(['message' => 'Product not found']);
+        }
 
-        if( $wc_product ){
-            return wp_send_json_success( $product_data );
+        if( $product ){
+            return wp_send_json_success( $product );
         }
         return wp_send_json_error([]);
     }
-
+    
     /*
     * @description Get list products
     */

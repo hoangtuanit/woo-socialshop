@@ -3,6 +3,8 @@
  * @package  WooSocialshop
  */
 
+defined( 'ABSPATH' ) || exit;
+
 namespace Inc\Base;
 use Inc\Base\BaseController;
 
