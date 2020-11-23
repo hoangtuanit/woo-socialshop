@@ -38,14 +38,15 @@ class SsConfig
 	* @since 1.0.0
 	* @param string $filename File name.
 	* @param string $key 	  Key in data return.
+	* @param string $default  Default value if not found.
 	* @return array|string
 	*/
-	public function readKey( $filename, $key ){
+	public function readKey( $filename, $key, $default = null ){
 		$data = $this->read($filename);
 		if( isset($data[ $key ] ) ){
 			return $data[ $key];
 		}
-		return null;
+		return $default;
 	}
 
 	/**
@@ -61,5 +62,13 @@ class SsConfig
 		}
 		return require($filePath);
 	}
+
+
+	/**
+	* Get number posts per page
+	* @since 1.0.0
+	* @param
+	* @return
+	*/
 
 }

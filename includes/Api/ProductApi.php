@@ -13,6 +13,12 @@ class ProductApi extends BaseApi{
     public function __construct(){
         $this->ssTaxonomy  = new SsTaxonomy();
         $this->ssProduct   = new SsProduct();
+
+        // $wc_query = new \WC_Product_Query();
+        // echo '<pre>wc_query:';
+        // print_r( $wc_query->get_query_vars() );
+        // echo '</pre>';
+
     }
 
     public function register(){        
@@ -34,22 +40,26 @@ class ProductApi extends BaseApi{
         $this->registerEndpoint( '/product/variants',               'GET', 'getProductVariants' );
         $this->registerEndpoint( '/product/variation-attributes',   'GET', 'getVariationAttributes' );
     }
-
+    
     /*
     * @description Get list products
     */
     public function getProducts(){
         $params   = $this->parseParams($_GET); 
+        $params['return'] = 'ids';
         $wc_products = wc_get_products($params);
         $results  = [];
         foreach ($wc_products->products as $key => $product) {
-            $product_id    = $product->get_id();
-            $results[$key] = $product->get_data();
+            echo '<pre>product:';
+            print_r( $product );
+            echo '</pre>';
+            // $product_id    = $product->get_id();
+            // $results[$key] = $product->get_data();
 
-            $results[$key]['type']       = $product->get_type();
-            $results[$key]['image_src']  = $product->get_image();
-            $results[$key]['tags']       = $this->ssTaxonomy->getTags($product_id);
-            $results[$key]['categories'] = $this->ssTaxonomy->getProductCats($product_id);
+            // $results[$key]['type']       = $product->get_type();
+            // $results[$key]['image_src']  = $product->get_image();
+            // $results[$key]['tags']       = $this->ssTaxonomy->getTags($product_id);
+            // $results[$key]['categories'] = $this->ssTaxonomy->getProductCats($product_id);
 
         }
         return wp_send_json_success($results);
