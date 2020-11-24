@@ -11,6 +11,7 @@ class ProductApi extends BaseApi{
     protected $ssTaxonomy, $ssProduct;
 
     public function __construct(){
+        parent::__construct(); 
         $this->ssTaxonomy  = new SsTaxonomy();
         $this->ssProduct   = new SsProduct();
 
@@ -46,21 +47,10 @@ class ProductApi extends BaseApi{
     */
     public function getProducts(){
         $params   = $this->parseParams($_GET); 
-        $params['return'] = 'ids';
         $wc_products = wc_get_products($params);
         $results  = [];
         foreach ($wc_products->products as $key => $product) {
-            echo '<pre>product:';
-            print_r( $product );
-            echo '</pre>';
-            // $product_id    = $product->get_id();
-            // $results[$key] = $product->get_data();
-
-            // $results[$key]['type']       = $product->get_type();
-            // $results[$key]['image_src']  = $product->get_image();
-            // $results[$key]['tags']       = $this->ssTaxonomy->getTags($product_id);
-            // $results[$key]['categories'] = $this->ssTaxonomy->getProductCats($product_id);
-
+            $results[$key] = $this->ssProduct->convertData($product);
         }
         return wp_send_json_success($results);
     }
@@ -104,10 +94,13 @@ class ProductApi extends BaseApi{
             return wp_send_json_error(['message' => 'Product Id is required']);
 
         $product_id = $_GET['id'];
-        $wc_product = new \WC_Product_Attribute( $product_id );
-        echo '<pre>';  
-        print_r( $wc_product->get_data() );
+        $wc_product = wc_get_product( $product_id );
+        echo '<pre>product_id:';
+        print_r( $wc_product->get_type() );
         echo '</pre>';
+        // echo '<pre>get_data:';  
+        // print_r( $wc_product->get_data() );
+        // echo '</pre>';
         return wp_send_json_success();
     }
 

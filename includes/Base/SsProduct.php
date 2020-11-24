@@ -22,6 +22,26 @@ class SsProduct{
 		$this->ssConfig   = new SsConfig();
 		$this->date_format   = $this->ssConfig->readKey('Global','date_format');
 		$this->field_removed = $this->ssConfig->readKey('Product','removed');
+
+
+		// $arr  = [];
+		// $product_key  = 'attributes.material.a.b';
+		// $this->setArray($arr,$product_key,[]);
+		// echo '<pre>';
+		// print_r( $arr );
+		// echo '</pre>';
+		// die();
+
+	}
+
+
+	function setArray(&$array, $keys, $value) {
+		$keys = explode(".", $keys);
+		$current = &$array;
+		foreach($keys as $key) {
+			$current = &$current[$key];
+		}
+		$current = $value;
 	}
 	
 	function getImageSrc( $id, $size = 'large' ){
@@ -66,13 +86,56 @@ class SsProduct{
 	* @return array
 	*/
 	function getProduct( $id ){
-
 		$wc_product = wc_get_product($id);
+		switch ($wc_product->get_type()) {
+			case 'simple':
+				return $this->getProductSimple($wc_product);
+				break;
+
+			case 'variable':
+				return $this->getProductSimple($wc_product);
+				break;
+
+			case 'variation':
+				return $this->getProductSimple($wc_product);
+				break;
+
+			default:
+				return [];
+		}
+
+	}
+
+	/**
+	* Get WC Product Simple by id
+	* @since   1.0.0
+	* @param   $wc_product WC Product 
+	* @return  array
+	*/
+	function getProductSimple ( $wc_product ){
+
 		if( empty($wc_product) )
 			return [];
 
 		return $this->convertData( $wc_product );
+	}
 
+	/**
+	* Get WC Product Variation by id
+	* @since   1.0.0
+	* @param   $wc_product WC Product
+	* @return  array
+	*/
+	function getProductVariation ( $wc_product ){
+
+		echo '<pre>wc_product:';
+		print_r( $wc_product->get_attributes() );
+		echo '</pre>';
+
+		if( empty($wc_product) )
+			return [];
+
+		return $this->convertData( $wc_product );
 	}
 
 	/**
@@ -89,23 +152,66 @@ class SsProduct{
 		$product_data = $wc_product->get_data();
 
 		$product_data['date_created_with_timezone']  = Common::formatDate($wc_product->get_date_created());
-		$product_data['date_modified_with_timezone'] = $wc_product->get_date_modified()->format( $this->date_format );
-		$product_data['date_on_sale_from'] 	= $wc_product->get_date_on_sale_from();
-		$product_data['date_on_sale_to'] 	= $wc_product->get_date_on_sale_to();
+		$product_data['date_modified_with_timezone'] = Common::formatDate($wc_product->get_date_modified());
+		$product_data['date_on_sale_from_with_timezone'] 	= Common::formatDate($wc_product->get_date_on_sale_from());
+		$product_data['date_on_sale_to_with_timezone'] 	= Common::formatDate($wc_product->get_date_on_sale_to());
 		$product_data['product_type']       = $wc_product->get_type();
 		$product_data['image_url']          = $wc_product->get_image();
 		$product_data['gallery_images_url'] = $this->getThumbnailsSrc($product_data['gallery_image_ids']);
 		$product_data['product_url'] = get_permalink($product_id);
+		$wc_attributes = $wc_product->get_attributes();
+		// Get list attributes protected
+		if( is_array($wc_attributes) ){
+			foreach ($wc_attributes as $attr_key => $attributes) {
+				if( is_object($attributes)){
+					$product_data['attributes'][$attr_key] = $attributes->get_data();
+				}
+				else{
+					$product_data['attributes'][$attr_key] = $attributes;
+				}
+			}
+		}
 
-		if( !empty($mapping_config)){
+		$wc_downloads = $wc_product->get_downloads();
+		
+		// Get list attributes protected
+		if( is_array($wc_downloads) ){
+			foreach ($wc_downloads as $download_key => $downloads) {
+				if( is_object($downloads)){
+					$product_data['downloads'][$download_key] = $downloads->get_data();
+				}
+				else{
+					$product_data['downloads'][$download_key] = $downloads;
+				}
+			}
+		}
+		
+		//Mapping fields from Woo and App
+		if( $product_data['product_type'] == 'variation' &&  !empty($mapping_config)){
 			foreach ($mapping_config as $mapping_key => $product_key) {
 
-				if( empty($product_key) || !isset($product_data[$product_key]) ){
-					unset($product_data[$product_key]);
+				if( empty($product_key)  ){
+					#unset($product_data[$product_key]);
 					continue;
 				}
 
-				$product_data[$mapping_key] = $product_data[$product_key];
+				$nested_keys   = explode('.', $product_key );
+				if( count($nested_keys) < 2  )
+					continue;
+
+				$convert_keys  = $product_data;
+				$nested_length = count($nested_keys);
+				for( $i = 0 ; $i < $nested_length; $i++ ){
+
+					if( $i + 1 == $nested_length )
+						continue;
+
+					$check_key =  $nested_keys[$i];
+					$next_key  =  $nested_keys[$i+1];
+					$convert_keys = $this->extractData( $convert_keys[$check_key], $next_key );
+				}
+
+				$product_data[$mapping_key] = $convert_keys;
 				
 			}
 		}
@@ -117,8 +223,28 @@ class SsProduct{
 			}
 		}
 
+		// Get list variations
+		$wc_children = $wc_product->get_children();
+		if( is_array($wc_children) ){
+			foreach ($wc_children as $children_id) {
+				$children  = wc_get_product($children_id);
+				$product_data['variant'][] = $this->convertData($children);
+			}
+		}
+
 		return $product_data;
 	}
+
+	/**
+	* Extract product data
+	* @since   1.0.0
+	* @param   
+	* @return  
+	*/
+	function extractData ( $product, $key ){
+		return isset($product[$key]) ? $product[$key] : null;
+	}
+
 
 	/**
 	* Parse request data to mapping with filter from app

@@ -5,17 +5,16 @@
 namespace Inc\Api;
 use WP_REST_SERVER;
 use WP_REST_Request;
+use Inc\Base\SsConfig;
 
 
 class BaseApi{
     
     public $namespace = 'ss-integrate';
+    protected $ssConfig;
 
     public function __construct(){
-        // $product = new \WC_Product(2877);
-        // echo '<pre>';
-        // print_r( $product->get_type() );
-        // echo '</pre>';
+        $this->ssConfig = new SsConfig();
     }
 
     public function registerEndpoint( $endpoint, $method, $callback ){
@@ -23,7 +22,7 @@ class BaseApi{
         register_rest_route( $this->namespace, $endpoint , array(
             array(
                 'methods' => 'GET',
-                #'methods' => array( $this, 'getMethods') ,
+                #'methods' => array( $this, 'getMethods'),
                 'args' => array(),
                 'permission_callback' => array( $this , 'privilegedPermissionCallback' ),
                 'callback' => array( $this, $callback ),
@@ -52,7 +51,9 @@ class BaseApi{
     }
 
     public function parseParams( $request ){
-        $result = ['paged'=>1, 'limit'=>10, 'paginate' => true];
+        $limit    = $this->ssConfig->readKey('Product','limit');
+        $paginate = $this->ssConfig->readKey('Product','paginate');
+        $result = ['paged'=>1, 'limit'=>$limit, 'paginate' => $paginate];
         $param  =  wp_parse_args($request);
         if( isset($param['page'])){
             $result['page'] = $param['page'];
