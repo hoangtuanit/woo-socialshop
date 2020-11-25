@@ -159,62 +159,43 @@ class SsProduct{
 		$product_data['image_url']          = $wc_product->get_image();
 		$product_data['gallery_images_url'] = $this->getThumbnailsSrc($product_data['gallery_image_ids']);
 		$product_data['product_url'] = get_permalink($product_id);
-		$wc_attributes = $wc_product->get_attributes();
-		// Get list attributes protected
-		if( is_array($wc_attributes) ){
-			foreach ($wc_attributes as $attr_key => $attributes) {
-				if( is_object($attributes)){
-					$product_data['attributes'][$attr_key] = $attributes->get_data();
-				}
-				else{
-					$product_data['attributes'][$attr_key] = $attributes;
-				}
-			}
-		}
 
-		$wc_downloads = $wc_product->get_downloads();
-		
 		// Get list attributes protected
-		if( is_array($wc_downloads) ){
-			foreach ($wc_downloads as $download_key => $downloads) {
-				if( is_object($downloads)){
-					$product_data['downloads'][$download_key] = $downloads->get_data();
-				}
-				else{
-					$product_data['downloads'][$download_key] = $downloads;
-				}
-			}
-		}
-		
+		#$product_data['attributes'] = $this->parseAttributes($wc_product);
+		// Get list downloads protected
+		#$product_data['downloads']  = $this->parseDownloads($wc_product);
+		// Convert data map with mapping fields
+
+		#$product_data  = $this->mapping($wc_product);
+
 		//Mapping fields from Woo and App
-		if( $product_data['product_type'] == 'variation' &&  !empty($mapping_config)){
-			foreach ($mapping_config as $mapping_key => $product_key) {
+		// if( $product_data['product_type'] == 'variation' &&  !empty($mapping_config)){
+		// 	foreach ($mapping_config as $mapping_key => $product_key) {
 
-				if( empty($product_key)  ){
-					#unset($product_data[$product_key]);
-					continue;
-				}
+		// 		if( empty($product_key)  ){
+		// 			#unset($product_data[$product_key]);
+		// 			continue;
+		// 		}
 
-				$nested_keys   = explode('.', $product_key );
-				if( count($nested_keys) < 2  )
-					continue;
+		// 		$nested_keys   = explode('.', $product_key );
+		// 		if( count($nested_keys) < 2  )
+		// 			continue;
 
-				$convert_keys  = $product_data;
-				$nested_length = count($nested_keys);
-				for( $i = 0 ; $i < $nested_length; $i++ ){
+		// 		$convert_keys  = $product_data;
+		// 		$nested_length = count($nested_keys);
+		// 		for( $i = 0 ; $i < $nested_length; $i++ ){
+		// 			if( $i + 1 == $nested_length )
+		// 				continue;
 
-					if( $i + 1 == $nested_length )
-						continue;
+		// 			$check_key =  $nested_keys[$i];
+		// 			$next_key  =  $nested_keys[$i+1];
+		// 			$convert_keys = $this->extractData( $convert_keys[$check_key], $next_key );
+		// 		}
 
-					$check_key =  $nested_keys[$i];
-					$next_key  =  $nested_keys[$i+1];
-					$convert_keys = $this->extractData( $convert_keys[$check_key], $next_key );
-				}
-
-				$product_data[$mapping_key] = $convert_keys;
+		// 		$product_data[$mapping_key] = $convert_keys;
 				
-			}
-		}
+		// 	}
+		// }
 
 		// Unset fields not accessery
 		if( !empty($this->field_removed) ){
@@ -282,6 +263,99 @@ class SsProduct{
 
 		return $filter;
 
+	}
+
+	/**
+	* Get protected data from WC_Product_Download
+	* @since   1.0.0
+	* @param   WC_Product $wc_product
+	* @return  array
+	*/
+	function parseDownloads ($wc_product){
+		$result = [];
+		$wc_downloads = $wc_product->get_downloads();
+		
+		// Get list attributes protected
+		if( is_array($wc_downloads) ){
+			foreach ($wc_downloads as $download_key => $downloads) {
+				if( is_object($downloads)){
+					$result[$download_key] = $downloads->get_data();
+				}
+				else{
+					$result[$download_key] = $downloads;
+				}
+			}
+		}
+		return $result;
+	}
+
+	/**
+	* Get protected data from WC_Product_Attribute 
+	* @since   1.0.0
+	* @param   WC_Product $wc_product
+	* @return  array
+	*/
+	function parseAttributes ($wc_product){
+		$result = [];
+		$wc_attributes = $wc_product->get_attributes();
+		// Get list attributes protected
+		if( is_array($wc_attributes) ){
+			foreach ($wc_attributes as $attr_key => $attributes) {
+				if( is_object($attributes)){
+					$result[$attr_key] = $attributes->get_data();
+				}
+				else{
+					$result[$attr_key] = $attributes;
+				}
+			}
+		}
+		return $result;
+	}
+
+	/**
+	* Convert product data map to mapping fields from App
+	* Product type is Varation
+	* @since   1.0.0
+	* @param   WC_Product $product_data Product data
+	* @return  array
+	*/
+	function mapping ( $wc_product ){
+
+		$product_type   = $wc_product->get_type();
+		if( $product_type == 'variation' )
+			return [];
+
+		$mapping_config = $this->ssConfig->readKey('Product','mapping',[]);
+		$product_data   = $wc_product->get_data();
+		if( empty($mapping_config) )
+			return [];
+
+		foreach ($mapping_config as $mapping_key => $product_key) {
+			if( empty($product_key)  ){
+				#unset($product_data[$product_key]);
+				continue;
+			}
+
+			$nested_keys   = explode('.', $product_key );
+			if( count($nested_keys) < 2  )
+				continue;
+			
+			$convert_keys  = $product_data;
+			$nested_length = count($nested_keys);
+			for( $i = 0 ; $i < $nested_length; $i++ ){
+				if( $i + 1 == $nested_length )
+					continue;
+
+				$check_key =  $nested_keys[$i];
+				$next_key  =  $nested_keys[$i+1];
+				$convert_keys = $this->extractData( $convert_keys[$check_key], $next_key );
+			}
+
+			$product_data[$mapping_key] = is_object($convert_keys) ? $convert_keys->get_data() : $convert_keys;
+			
+		}
+		
+		return $product_data;
 	}
 
 }
